@@ -122,7 +122,7 @@ endif()
 
 AddProject(tvm
   GITHUB bastien-muraccioli/tvm
-  GIT_TAG origin/topic/new-vel-damper
+  GIT_TAG origin/master
   DEPENDS eigen-qld eigen-quadprog lexls ${tvm_EXTRA_DEPENDS}
   CMAKE_ARGS -DTVM_WITH_QLD:BOOL=ON -DTVM_WITH_QUADPROG:BOOL=ON -DTVM_WITH_LEXLS:BOOL=ON -DTVM_WITH_ROBOT:BOOL=OFF -DTVM_THOROUGH_TESTING:BOOL=OFF -DTVM_WITH_LSSOL:BOOL=${WITH_LSSOL}
   APT_PACKAGES libtvm-dev
