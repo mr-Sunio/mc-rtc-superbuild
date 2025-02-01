@@ -38,7 +38,6 @@ jobs:
       - name: Workarounds
         shell: bash
         run: |
-          apt update
           sudo apt-mark hold grub-efi-amd64-signed
       - name: Bootstrap
         shell: bash
