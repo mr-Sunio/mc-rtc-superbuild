@@ -1,271 +1,153 @@
-mc_rtc superbuild
-==
+# Industry Ready PHRI: A Control Framework for Physical Human-Robot Interaction Toward Industrial Applications
 
-This project is a superbuild project for the framework demonstrated in the RSS 2025 Demo Paper submission ["*Demonstrating a Control Framework for Physical Human-Robot Interaction Toward Industrial Applications*"](https://industry-ready-phri.github.io/).
+This repository contains the complete code base used in the paper:
 
-It will build all mc_rtc dependencies, mc_rtc itself, and dependencies related to the demonstrated control framework. You can also extend the project locally or clone extensions to build your own projects.
+> **"Demonstrating a Control Framework for Physical Human-Robot Interaction Toward Industrial Applications"**
 
-Requirements
---
+![Static Badge](https://img.shields.io/badge/Paper_status-Submitted-orange?style=flat)
 
-- [CMake >= 3.20](https://cmake.org/download/)
-- [Git](https://git-scm.com/)
-- [Visual Studio 2019 and later](https://visualstudio.microsoft.com/) (Windows)
+This work presents a novel control framework for physical human-robot interaction (PHRI) aimed at industrial applications. The repository is built on a modified version of the [mc-rtc-superbuild](https://github.com/mc-rtc/mc-rtc-superbuild) infrastructure. It has been adapted to automatically install all required dependencies and build the code necessary for reproducing the experiments and results described in the paper.
 
-### Installing the requirements (bootstrapping)
+For more details, please visit the project website:  
+[https://industry-ready-phri.github.io/](https://industry-ready-phri.github.io/)
 
-You can fulfill the requirements above by invoking our bootstrapping script:
+---
+
+## Overview
+
+This superbuild repository will:
+1. **Install all required system dependencies.**
+2. **Clone and configure all necessary project repositories.**
+3. **Build and install the projects** in a consistent and reproducible manner.
+
+By using this repository, you can reproduce the experiments from the paper, test modifications, or extend the framework for your own research.
+
+---
+
+## Requirements
+
+- **CMake ≥ 3.20**  
+  [Download CMake](https://cmake.org/download/)
+- **Git**  
+  [Download Git](https://git-scm.com/)
+- **Build Tools** (e.g., `build-essential` on Debian/Ubuntu)  
+- **Operating System:** Tested on Linux (Debian/Ubuntu) and macOS  
+  *(For Windows users, Visual Studio 2019 or later is required.)*
+
+---
+
+## Installation
+
+### 1. Clone the Repository
 
 ```sh
-git clone https://github.com/mc-rtc/mc-rtc-superbuild
+git clone https://github.com/yourusername/industry-ready-phri.git
 ```
 
-- on Debian like distributions: `./mc-rtc-superbuild/utils/bootstrap-linux.sh`
-- on macOS: `./mc-rtc-superbuild/utils/bootstrap-macos.sh`
-
-Usage
---
-
-First, make sure you have configured `git`:
+### 2. Bootstrap the Environment
+Navigate to the cloned repository’s superbuild folder:
 ```sh
-git config --global user.name "Full Name"
-git config --global user.email "your.email@provider.com"
+cd industry-ready-phri/mc-rtc-superbuild
 ```
 
-Then configure and run the superbuild as follows:
-
-```shell
-# Run the bootstrap script in mc-rtc-superbuild/utils folder if required
-cmake -S mc-rtc-superbuild -B mc-rtc-superbuild/build -DSOURCE_DESTINATION=${HOME}/devel/src -DBUILD_DESTINATION=${HOME}/devel/build
-cmake --build mc-rtc-superbuild/build --config RelWithDebInfo
+Then run the bootstrap script to install system dependencies:
+- On Debian-like systems:
+```sh
+./utils/bootstrap-linux.sh
 ```
 
-This will:
-
-1. Install all required system dependencies
-2. Create a meta-repository at `SOURCE_DESTINATION` (the folder must be empty or already created by another superbuild instance)
-3. Add Git submodules for each of the projects in the meta-repository
-4. Build each project in the `${BUILD_DESTINATION}/${PROJECT}` folder and install it in the provided `${CMAKE_INSTALL_PREFIX}`
-
-You can then use the projects that were built and cloned by the superbuild as you would use projects you built and clone yourself. If you modify some projects, the superbuild will pick up on it and rebuild its dependents.
-
-#### Note
-
-On Linux and macOS, all commands of the form `cmake --build ${FOLDER} --config RelWithDebInfo --target ${TARGET}` can also be run by `make ${TARGET}` in `${FOLDER}`. In particular, you can start a build by simply doing `make` in the build folder.
-
-You should avoid running something like `make -jN`. This will build up to `N` projects in parallel but each project will run its own parallelized build and that will likely be too much for your machine RAM or CPU.
-
-Separate clone and build
-==
-
-If you want to clone everything before attempting the first build you can use the `clone` target:
-
-```shell
-git clone https://github.com/mc-rtc/mc-rtc-superbuild
-cmake -S mc-rtc-superbuild -B mc-rtc-superbuild/build -DSOURCE_DESTINATION=${HOME}/devel/src -DBUILD_DESTINATION=${HOME}/devel/build
-cd mc-rtc-superbuild/build
-cmake --build . --config RelWithDebInfo --target clone
-cmake --build . --config RelWithDebInfo
+- On macOS:
+```sh
+./utils/bootstrap-macos.sh
 ```
 
-Update the repositories
-==
+### 3. Configure and Build
 
-You can run the `update` target to pull all the projects:
-```shell
-cmake --build . --config RelWithDebInfo --target update
+Configure the superbuild by specifying where the source code should be cloned and where the build files will be generated. For example:
+
+```sh
+cmake -S . -B build \
+  -DSOURCE_DESTINATION=${HOME}/devel/src \
+  -DBUILD_DESTINATION=${HOME}/devel/build \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo
 ```
 
-Or individually pull some of the projects and their dependencies:
-```shell
-cmake --build . --config RelWithDebInfo --target update-mc_rtc
+Then, build the complete project:
+```sh
+cmake --build build --config RelWithDebInfo
 ```
 
-Update mc-rtc-superbuild and extensions
-==
+---
 
-You can run the `self-update` target to update mc-rtc-superbuild and all the cloned extensions:
-```shell
-cmake --build . --config RelWithDebInfo --target self-update
+## Usage
+
+After a successful build, the projects built by the superbuild are ready for use. You can:
+
+- Run experiments: Launch simulation or control applications as described in the paper.
+- Rebuild projects: If you modify the source, simply rebuild using:
+```sh
+cmake --build build --config RelWithDebInfo
+```
+- Clone repositories separately: To clone all repositories without building immediately, use:
+```sh
+cmake --build build --config RelWithDebInfo --target clone
 ```
 
+## Updating the Code Base
 
-Uninstall projects
-==
+To update all the cloned repositories with the latest changes, run:
 
-You can run the `uninstall` target to uninstall all the projects at once:
-```shell
-cmake --build . --target uninstall
-```
-It might require `sudo` if you install to a non-writable prefix (e.g. `/usr/local`)
-
-You cam also uninstall a specific project:
-```shell
-cmake --build . --target uninstall-mc_rtc
+```sh
+cmake --build build --config RelWithDebInfo --target update
 ```
 
+Or update a specific project (e.g., mc_rtc):
 
-Extensions
---
-
-You can add extensions to the superbuild system by cloning extensions projects into the `extensions` folder, see for example the [lipm-walking-controller-superbuild](https://github.com/mc-rtc/lipm-walking-controller-superbuild) for an example centered around a single project.
-
-```shell
-cd mc-rtc-superbuild/extensions
-git clone https://github.com/mc-rtc/lipm-walking-controller-superbuild
-cd ../build/
-# Will build mc_rtc and then the lipm-walking-controller project and its dependencies
-cmake --build . --config RelWithDebInfo
+```sh
+cmake --build build --config RelWithDebInfo --target update-mc_rtc
 ```
 
-You can also check out [superbuild-extensions](https://github.com/mc-rtc/superbuild-extensions) for commonly available extensions. Please refer to this repository for usage instructions.
+For updating the superbuild itself along with any extensions:
 
-Options
---
-
-The following CMake options can be passed:
-
-| Options | Default | Description |
-| :---    | :-----: | :---        |
-| `WITH_ROS_SUPPORT` | `ON` (Linux)<br/>`OFF` (others) | Build mc_rtc with the ROS plugin, install ROS if necessary |
-| `WITH_LSSOL` | `OFF` | Enable the LSSOL QP solver, you must have access to the eigen-lssol package |
-| `INSTALL_DOCUMENTATION` | `OFF` | Generate and install projects documentation on your local machine |
-| `MC_RTC_SUPERBUILD_VERBOSE` | `OFF` | Output more information about the build actions |
-| `VERBOSE_TEST_OUTPUT` | `OFF` | Output more information during testing |
-| `MC_RTC_SUPERBUILD_SET_ENVIRONMENT` | `ON` | (Windows only) Changes the PATH variable |
-| `BUILD_BENCHMARKS` | `OFF` | Build mc_rtc benchmarks |
-| `INSTALL_SYSTEM_DEPENDENCIES` | `ON` | Install system-level dependencies, do not disable unless you known these requirements are fullfilled |
-| `PYTHON_BINDING` | `ON` | Build mc_rtc Python bindings |
-| `PYTHON_BINDING_USER_INSTALL` | `ON`(Windows)<br/> `OFF` (others) | Install the Python bindings in user space |
-| `PYTHON_BINDING_FORCE_PYTHON2` | `OFF` | Force usage of  python2 instead of python |
-| `PYTHON_BINDING_FORCE_PYTHON3` | `OFF` | Force usage of  python3 instead of python |
-| `PYTHON_BINDING_BUILD_PYTHON2_AND_PYTHON3` | `OFF` | Build Python 2 and Python 3 bindings |
-| `SOURCE_DESTINATION` | | If defined, projects will be cloned into this folder otherwise the `src` sub-folder in the superproject build directory is chosen |
-| `BUILD_DESTINATION` | | If defined, projects will be built in this folder otherwise the `build` sub-folder in the superproject build directory is chosen |
-| `LINK_BUILD_AND_SRC` | `ON` | Create a `build` symbolic link to the build folder in the source folder and a `to-src` symbolic link to the source folder in the build folder |
-| `BUILD_LINK_SUFFIX` | | If defined, this is happened to the `build` symbolic link created by `LINK_BUILD_AND_SRC` |
-| `LINK_COMPILE_COMMANDS` | `ON` | Create a symbolic link to the `compile_commands.json` file generated by CMake inside the source folder |
-| `USE_MC_RTC_APT_MIRROR` | `OFF` | Use mc_rtc apt mirror to install some projects (only available on Ubuntu LTS) |
-| `USE_MC_RTC_APT_MIRROR_STABLE` | `OFF` | Use the stable mirror rather than the head mirror |
-
-Adding your own projects
---
-
-You can:
-- Add a new `AddProject` declaration to the main `CMakeLists.txt` of this repository (look for `PERSONAL_PROJECTS` in that file to find the correct location)
-- Create a new extension under the `extensions` folder:
-```shell
-mkdir -p extensions/local
-editor extensions/local/CMakeLists.txt
-```
-- Create a simple `.cmake` under the `extensions` folder with your projects:
-```shell
-touch extensions/local.cmake
-editor extensions/local.cmake
+```sh
+cmake --build build --config RelWithDebInfo --target self-update
 ```
 
-The remainder is an introduction of the functions offered by superbuild to specify your own project.
+## Uninstallation
 
-AddProject
-==
+If you need to remove the installed projects, you can uninstall everything at once:
 
-`AddProject` specifies a new project, here is a simple example:
-
-```cmake
-AddProject(lipm_walking_controller
-  GITHUB mehdi-benallegue/lipm_walking_controller
-  GIT_TAG origin/rebase_stabilizer_ana
-  DEPENDS copra mc_state_observation mc_plugin_footstep_plan_msgs
-)
+```sh
+cmake --build build --target uninstall
 ```
 
-Here:
-- `GITHUB` is a git source (see `AddGitSource` for available options and how to extend them)
-- `GIT_TAG` is the branch or tag that we use for this repository. It defaults to `origin/main`. When `GIT_TAG` starts with `origin/` it is interpreted as a branch otherwise it is interpreted as a tag
-- `DEPENDS` are other projects that are depended upon
+(Note: You might need sudo if the installation prefix requires elevated privileges.)
 
-Other options for `AddProject` are:
-- `SUBFOLDER <folder>`: clone the repository in a subfolder of `SOURCE_DESTINATION`
-- `CLONE_ONLY`: do not perform any build step, only clone the repository
-- `SKIP_TEST`: do not run or build unit tests
-- `NO_NINJA`: use CMake's default generator rather than ninja
-- `NO_SOURCE_MONITOR`: disable source monitoring. By default, superbuild will monitor the source folder to force the rebuild of packages and their dependents when change happens. Some projects systematically trigger rebuilds under this monitor and this option disable it. Rebuilds then have to be triggered manually via the `force-${NAME}` target.
-- `SKIP_SYMBOLIC_LINKS`: disable the creation of symbolic links. By default, on supported platforms, superbuild creates a link between the source folder and the build folder as well as a link from the source folder to the CMake's generated `compile_commands.json`. This option disables the behavior.
-- `INSTALL_PREFIX`: override the provided `CMAKE_INSTALL_PREFIX`
+---
 
-For advanced usage, other options supported by [ExternalProject_Add](https://cmake.org/cmake/help/latest/module/ExternalProject.html) are also supported by `AddProject`.
+## Extensions and Customization
 
-In particular, `CMAKE_ARGS`, `CONFIGURE_COMMAND`, `BUILD_COMMAND` and `INSTALL_COMMAND` can be used to control the build.
+This code base is designed to be flexible. You can extend the framework by:
 
+- Adding new projects via the main CMakeLists.txt (look for PERSONAL_PROJECTS).
+- Creating new extensions under the extensions folder.
+- Modifying or adding CMake options to suit specific experimental setups.
 
-CreateCatkinWorkspace
-==
+For further details on how to extend the superbuild, please refer to the original [mc-rtc-superbuild documentation](https://github.com/mc-rtc/mc-rtc-superbuild).
 
-** `CreateCatkinWorkspace(ID <id> DIR <dir> {CATKIN_MAKE|CATKIN_BUILD} [CATKIN_BUILD_ARGS <args>...])` **
+---
 
+## Citation
 
-Declare a catkin workspace:
-- `<id>` must be unique throughout the superbuild and its extensions
-- `<dir>` is a directory (relative to `SOURCE_DESTINATION`) where the workspace is created
-- `CATKIN_MAKE`/`CATKIN_BUILD` whether to build the workspace with `catkin_make` or `catkin build`
-- `<args>` are passed as build arguments to `catkin build` when it is used
+If you use this code in your research, please cite the paper as follows:
 
-AddCatkinProject
-==
+---
 
-** `AddCatkinProject(<name> WORKSPACE <id> [<options>]...)`
+## Contact
 
-Adds a catkin project into the provided workspace. The git repository is provided through the same way as with `AddProject`.
-
-If `WITH_ROS_SUPPORT` is `OFF` then this is treated like `AddProject`
-
-AddPackageToCatkinSkiplist
-==
-
-** `AddPackageToCatkinSkiplist(<id> <package>)`
-
-Adds the given package to the catkin build's skiplist
+For any questions or issues, please open an issue in this repository or contact [bastien.muraccioli@aist.go.jp] or [mathieu.celerier@aist.go.jp].
 
 
-AddGitSource
-==
+---
 
-** `AddGitSource(<id> <uri>)` **
-
-Adds a new git source to superbuild:
-- `<id>` unique id that can be used in subsequent `AddProject` commands
-- `<uri>` corresponding Git URI (such that repository stubs can be appended to form full URIs)
-
-superbuild knows the following source:
-- `GITHUB` which is `https://github.com/`
-- `GITHUB_PRIVATE` which is `git@github.com:`
-- `GITE` which is `git@gite.lirmm.fr:`
-- `GIT_REPOSITORY` which is empty, allowing one to put arbitrary fully qualified Git URI
-
-AddProjectPlugin
-==
-
-** `AddProjectPlugin(<name> <project> [SUBFOLDER <folder>] [LINK_NAME <name>] [<options>]...)` **
-
-Clone the project inside the provided `SUBFOLDER` of `<project>`. Other options are passed to `AddProject` but `CLONE_ONLY` is always enabled.
-
-By default, the project is cloned in an hidden folder (due to submodule limitations) and linked inside the specified project's source directory as `${SUBFOLDER}/${NAME}`. `LINK_NAME` can override this behavior and create the link to `${SUBFOLDER}/${LINK_NAME}`.
-
-AptInstall
-==
-
-
-** `AptInstall(<package> ...)` **
-
-Wrapper around the `apt` command to install system packages. The function does nothing on non-Debian-based systems. Otherwise it installs the provided packages that are missing.
-
-The packages specified by calling these commands will be installed together at the end of the configuration process. If the packages are required immediately you can use `AptInstallNow`.
-
-RequireExtension
-==
-
-**`RequireExtension(FOLDER ...)`**
-
-This allows an extension to require another extension and make sure this extension is included before the one being processed.
-
-Supported arguments are the one of [`FetchContent_Declare`](https://cmake.org/cmake/help/latest/module/FetchContent.html)
+This modified README now serves as a self-contained guide for reproducing the work associated with the paper, while maintaining the original superbuild functionality. Adjust paths, URLs, and other details as appropriate for your repository and project requirements.
