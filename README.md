@@ -6,7 +6,7 @@ This repository contains the complete code base used in the paper:
 
 ![Static Badge](https://img.shields.io/badge/Paper_status-Submitted-orange?style=flat)
 
-This work presents a novel control framework for physical human-robot interaction (PHRI) aimed at industrial applications. The repository is built on a modified version of the [mc-rtc-superbuild](https://github.com/mc-rtc/mc-rtc-superbuild) infrastructure. It has been adapted to automatically install all required dependencies and build the code necessary for reproducing the experiments and results described in the paper.
+This work presents a novel control framework for physical human-robot interaction (PHRI) aimed at industrial applications. The repository is built on a modified version of the [mc-rtc-superbuild](https://github.com/mc-rtc/mc-rtc-superbuild) infrastructure. It has been adapted to automatically install all required dependencies and build the code necessary for the controller used to perform the experiments and results described in the paper.
 
 For more details, please visit the project website:  
 [https://industry-ready-phri.github.io/](https://industry-ready-phri.github.io/)
