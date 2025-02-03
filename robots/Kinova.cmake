@@ -44,5 +44,5 @@ AddCatkinProject(ros_kortex
 AddProject(mc_kinova
   GITHUB mathieu-celerier/mc_kinova
 	GIT_TAG origin/main
-	DEPENDS mc_rtc
+	DEPENDS mc_rtc ros_kortex
 )
