@@ -1,4 +1,4 @@
-include(${CMAKE_CURRENT_LIST_DIR}/../simulation/MuJoCo.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/MuJoCo.cmake)
 
 AptInstall(libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libglew-dev)
 
