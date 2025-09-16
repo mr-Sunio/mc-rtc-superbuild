@@ -118,6 +118,11 @@ if(EMSCRIPTEN)
   include(cmake/emscripten-dependencies.cmake)
 endif()
 
+if(UNIX)
+  # Workaround for Boost, cmake does not include this path by default
+  set(ENV{CMAKE_PREFIX_PATH} "/usr/lib/x86_64-linux-gnu:$ENV{CMAKE_PREFIX_PATH}")
+endif()
+
 if(UNIX
    AND NOT APPLE
    AND NOT EMSCRIPTEN
@@ -142,9 +147,9 @@ message(
 ================================================================================
 **
 ** mc-rtc-superbuild is now ready, the following special targets are available:
-** - clone: clone all projects into their location
-** - update: update all the projects at once
-** - uninstall: uninstall all the project at once
+** - clone: clone all projects into their location, or update remote/branch
+** - update: update all projects at once
+** - uninstall: uninstall all projects at once
 **
 ** You can also use the [COMMAND]-[NAME] form to update particular projects
 **
@@ -153,11 +158,23 @@ message(
 ** - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 )
 
-set(RC_FILE ".bashrc")
-set(RC_EXT ".bash")
-if("$ENV{SHELL}" STREQUAL "/usr/bin/zsh" OR "$ENV{SHELL}" STREQUAL "/bin/zsh")
+# This option may be used by CI to override the shell
+# This is meant to be used when the shell used for building differs
+# from the one used at runtime
+option(SUPERBUILD_OVERRIDE_SHELL "Manually override shell (zsh or bash)" "")
+if(SUPERBUILD_OVERRIDE_SHELL STREQUAL "zsh")
   set(RC_FILE ".zshrc")
   set(RC_EXT ".zsh")
+elseif(SUPERBUILD_OVERRIDE_SHELL STREQUAL "bash")
+  set(RC_FILE ".bashrc")
+  set(RC_EXT ".bash")
+else()
+  set(RC_FILE ".bashrc")
+  set(RC_EXT ".bash")
+  if("$ENV{SHELL}" STREQUAL "/usr/bin/zsh" OR "$ENV{SHELL}" STREQUAL "/bin/zsh")
+    set(RC_FILE ".zshrc")
+    set(RC_EXT ".zsh")
+  endif()
 endif()
 
 set(FINAL_MESSAGE

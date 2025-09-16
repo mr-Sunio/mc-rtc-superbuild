@@ -39,6 +39,10 @@ You can take advantage of these devcontainers in the following ways:
 This section contains common instructions that are needed no matter how you intend to use the provided devcontainers.
 
 - Install docker from https://docs.docker.com/engine/install/ubuntu/
+- clone `mc-rtc-superbuild`
+```bash
+git clone git@github.com:mc-rtc/mc-rtc-superbuild.git
+```
 - Adjust the devcontainer settings to your liking in `.devcontainer/<distro>/devcontainer.json`. In general the default settings will be sufficient. If you wish to do so, you can select a different mount point in the `mounts` property.
 - The devcontainers are configured to automatically forward your `ssh-agent`/`gpg-agent` socket to the devcontainer, so that you can use your ssh keys from within the devcontainer. For this to work, you need to add the following to your `~/.bashrc`:
 
@@ -57,7 +61,6 @@ ssh-add ~/.ssh/id_rsa # replace with the private key(s) you wish to share with t
 
 Using devcontainers in vscode is simple.
 
-- Clone `mc-rtc-superbuild`
 - Open the cloned folder in VSCode
 - VSCode will prompt you to install recommended extensions, in particular the `Devcontainer` extension
 - Once done, VSCode will prompt you to re-open the current folder in a devcontainer, select the image you wish.
@@ -91,7 +94,7 @@ contexts:
 - Create you devpod workspace
   ```
   cd <mc-rtc-superbuild>
-  devpod up . --devcontainer-path ./devcontainer/jammy/devcontainer.json --ide=none
+  devpod up . --devcontainer-path .devcontainer/jammy/devcontainer.json --ide=none
   ```
 - Connect to the devcontainer using ssh
   ```
@@ -139,7 +142,7 @@ By default the following folders are mounted within the container:
 </details>
 
 <details>
-  <summary>Build within the terminal<summary>
+  <summary>Build within the terminal</summary>
   You can now build from the terminal, or use VSCode's "CMake Tools" extension to select your desired build preset.
   Note that default presets will:
   - clone all projects in `./devel`
@@ -162,7 +165,7 @@ By default the following folders are mounted within the container:
 </details>
 
 <details>
-  <summary>Cutom build</summary>
+  <summary>Custom build</summary>
 
   To customize the build process, create a `CMakeUserPresets.json` file that inherits from one of the default presets, and set up your preferred build options (build folders, cmake arguments, build type, etc)
 
@@ -208,7 +211,7 @@ To use `mc_rtc`, you need to setup the environment variables for the local insta
 This can be done by sourcing the following file:
 
 ```
-source ./install/relwithdebinfo/setup_mc_rtc.sh
+source /home/vscode/workspace/install/setup_mc_rtc.sh
 ```
 
 
@@ -222,7 +225,7 @@ This files contains runtime information about the state of your program, and can
 On Ubuntu, by default, core dump files are managed by `apport` and disabled for non-official packages.
 The easiest way to generate them is by disabling `apport` and manually specifying a location for the core files.
 
-First diable apport
+First disable apport
 ```bash
 sudo service apport stop # temporarely disable apport
 sudo nano /etc/default/apport

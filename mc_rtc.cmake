@@ -68,6 +68,13 @@ AddProject(
   APT_PACKAGES libsch-core-dev
 )
 
+AddProject(
+  mesh-sampling
+  GITHUB jrl-umi3218/mesh_sampling
+  GIT_TAG origin/master
+  APT_PACKAGES libmesh-sampling-dev
+)
+
 if(PYTHON_BINDING)
   AddProject(
     sch-core-python
@@ -88,7 +95,7 @@ AddProject(RBDyn
 
 if(EMSCRIPTEN)
   set(USE_F2C_ARGS
-      CMAKE_ARGS "-DUSE_F2C:BOOL=ON"
+      "-DUSE_F2C:BOOL=ON"
       "-DCMAKE_C_STANDARD_INCLUDE_DIRECTORIES=${CMAKE_INSTALL_PREFIX}/include"
   )
 else()
@@ -98,14 +105,18 @@ endif()
 AddProject(
   eigen-qld
   GITHUB jrl-umi3218/eigen-qld
-  GIT_TAG origin/master NO_NINJA ${USE_F2C_ARGS}
+  GIT_TAG origin/master
+  NO_NINJA NO_COLOR
+  CMAKE_ARGS ${USE_F2C_ARGS}
   APT_PACKAGES libeigen-qld-dev python-eigen-qld python3-eigen-qld
 )
 
 AddProject(
   eigen-quadprog
   GITHUB jrl-umi3218/eigen-quadprog
-  GIT_TAG origin/master NO_NINJA ${USE_F2C_ARGS}
+  GIT_TAG origin/master
+  NO_NINJA
+  CMAKE_ARGS ${USE_F2C_ARGS}
   APT_PACKAGES libeigen-quadprog-dev
 )
 
@@ -116,7 +127,9 @@ if(WITH_LSSOL)
   AddProject(
     eigen-lssol
     GITE multi-contact/eigen-lssol
-    GIT_TAG origin/master NO_NINJA ${USE_F2C_ARGS}
+    GIT_TAG origin/master
+    NO_NINJA
+    CMAKE_ARGS ${USE_F2C_ARGS}
   )
 endif()
 
@@ -174,7 +187,7 @@ AddCatkinProject(
   CMAKE_ARGS ${MC_RTC_ROS_OPTION}
 )
 
-set(mc_rtc_DEPENDS tvm Tasks mc_rtc_data ndcurves state-observation)
+set(mc_rtc_DEPENDS tvm Tasks mc_rtc_data ndcurves state-observation mesh-sampling)
 if(WITH_ROS_SUPPORT)
   AddCatkinProject(
     mc_rtc_msgs

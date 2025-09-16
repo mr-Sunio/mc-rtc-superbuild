@@ -33,6 +33,7 @@ add_custom_target(
 #   LINK_COMPILE_COMMANDS
 # * NO_SOURCE_MONITOR Do not monitor source for changes
 # * NO_NINJA Indicate that the project is not compatible with the Ninja generator
+# * NO_COLOR Disables color output for projects that do not support it
 # * SUBFOLDER <folder> sub-folder of SOURCE_DESTINATION where to clone the project (also
 #   used as a sub-folder of BUILD_DESTINATION)
 # * APT_PACKAGES provide a list of packages to be installed instead of building from
@@ -56,7 +57,9 @@ add_custom_target(
 
 function(AddProject NAME)
   get_property(MC_RTC_SUPERBUILD_SOURCES GLOBAL PROPERTY MC_RTC_SUPERBUILD_SOURCES)
-  set(options NO_NINJA NO_SOURCE_MONITOR CLONE_ONLY SKIP_TEST SKIP_SYMBOLIC_LINKS)
+  set(options NO_NINJA NO_COLOR NO_SOURCE_MONITOR CLONE_ONLY SKIP_TEST
+              SKIP_SYMBOLIC_LINKS
+  )
   set(oneValueArgs
       ${MC_RTC_SUPERBUILD_SOURCES}
       GIT_TAG
@@ -227,52 +230,83 @@ This is likely a conflict between different extensions."
   # already been cloned the operation might lose local work if it hasn't been saved,
   # therefore we check for this and error if there is local changes
   if(DEFINED MC_RTC_SUPERBUILD_${NAME}_GIT_REPOSITORY)
-    set(PREVIOUS_GIT_REPOSITORY "${MC_RTC_SUPERBUILD_${NAME}_GIT_REPOSITORY}")
-    set(PREVIOUS_GIT_TAG "${MC_RTC_SUPERBUILD_${NAME}_GIT_TAG}")
+    message(
+      CONFIGURE_LOG
+      "MC_RTC_SUPERBUILD_${NAME}_GIT_REPOSITORY is defined: ${MC_RTC_SUPERBUILD_${NAME}_GIT_REPOSITORY}"
+    )
+
+    # GIT_REPOSITORY and/or GIT_TAG have changed
+    if(EXISTS "${SOURCE_DIR}/.git")
+      message(CONFIGURE_LOG "${SOURCE_DIR}/.git exists")
+      message(CONFIGURE_LOG "working dir is ${SOURCE_DIR}")
+      # Get current repository origin remote url
+      execute_process(
+        COMMAND git config --local --get remote.origin.url
+        WORKING_DIRECTORY "${SOURCE_DIR}"
+        OUTPUT_VARIABLE PREVIOUS_GIT_REPOSITORY
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+
+      # Get current branch
+      execute_process(
+        COMMAND git symbolic-ref --short HEAD
+        WORKING_DIRECTORY "${SOURCE_DIR}"
+        OUTPUT_VARIABLE PREVIOUS_GIT_REF
+        OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET
+      )
+
+      # if the branch does not exist, check if it is a tag
+      if(PREVIOUS_GIT_REF STREQUAL "")
+        execute_process(
+          COMMAND git describe --tags --exact-match HEAD
+          WORKING_DIRECTORY "${SOURCE_DIR}"
+          OUTPUT_VARIABLE PREVIOUS_GIT_TAG
+          OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+      else()
+        set(PREVIOUS_GIT_TAG origin/${PREVIOUS_GIT_REF})
+      endif()
+
+      message(CONFIGURE_LOG
+              "Previous repository is ${PREVIOUS_GIT_REPOSITORY}#${PREVIOUS_GIT_TAG}"
+      )
+    else()
+      message(CONFIGURE_LOG "${SOURCE_DIR}/.git does not exist")
+      set(PREVIOUS_GIT_REPOSITORY "${MC_RTC_SUPERBUILD_${NAME}_GIT_REPOSITORY}")
+      set(PREVIOUS_GIT_TAG "${MC_RTC_SUPERBUILD_${NAME}_GIT_TAG}")
+      message(CONFIGURE_LOG
+              "Previous repository is ${PREVIOUS_GIT_REPOSITORY}#${PREVIOUS_GIT_TAG}"
+      )
+    endif()
+
     if(NOT "${PREVIOUS_GIT_REPOSITORY}" STREQUAL "${GIT_REPOSITORY}"
        OR NOT "${PREVIOUS_GIT_TAG}" STREQUAL "${GIT_TAG}"
     )
-      # GIT_REPOSITORY and/or GIT_TAG have changed, we check if there was any local
-      # changes
+      # GIT_REPOSITORY and/or GIT_TAG have changed
       if(EXISTS "${SOURCE_DIR}/.git")
-        execute_process(
-          COMMAND git diff-index --quiet ${PREVIOUS_GIT_TAG} --
-          WORKING_DIRECTORY "${SOURCE_DIR}"
-          RESULT_VARIABLE GIT_HAS_ANY_CHANGES
+        set(GIT_COMMIT_EXTRA_MSG
+            "Updating from ${PREVIOUS_GIT_REPOSITORY}#${PREVIOUS_GIT_TAG} to ${GIT_REPOSITORY}#${GIT_TAG}"
         )
-        if(GIT_HAS_ANY_CHANGES)
-          message(
-            FATAL_ERROR
-              "The repository for ${NAME} changed.
-From
-  ${PREVIOUS_GIT_REPOSITORY}#${PREVIOUS_GIT_TAG}
-To
-  ${GIT_REPOSITORY}#${GIT_TAG}
-
-You have local changes in ${SOURCE_DIR} that would be overwritten by this change. Save your work before continuing"
-          )
-        endif()
+        message(
+          "-- ${NAME} repository will be updated from ${PREVIOUS_GIT_REPOSITORY}#${PREVIOUS_GIT_TAG} to ${GIT_REPOSITORY}#${GIT_TAG}"
+        )
+        # Update local remote and branch if there is no unpushed local changes
+        # Error out otherwise
+        add_custom_command(
+          OUTPUT "${STAMP_DIR}/${NAME}-submodule-update"
+          COMMAND
+            "${CMAKE_COMMAND}" -DSOURCE_DESTINATION=${SOURCE_DESTINATION}
+            -DTARGET_FOLDER=${RELATIVE_SOURCE_DIR} -DGIT_REPOSITORY=${GIT_REPOSITORY}
+            -DGIT_TAG=${GIT_TAG} -DLINK_TO=${LINK_TO}
+            -DSTAMP_OUT=${STAMP_DIR}/${NAME}-submodule-update -DOPERATION="update"
+            -DGIT_COMMIT_EXTRA_MSG=${GIT_COMMIT_EXTRA_MSG} -P
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/scripts/git-submodule-init-update.cmake
+          COMMENT "Update ${NAME} repository settings"
+        )
+        add_custom_target(
+          ${NAME}-submodule-update DEPENDS "${STAMP_DIR}/${NAME}-submodule-update"
+        )
       endif()
-      set(GIT_COMMIT_EXTRA_MSG
-          "Updating from ${PREVIOUS_GIT_REPOSITORY}#${PREVIOUS_GIT_TAG} to ${GIT_REPOSITORY}#${GIT_TAG}"
-      )
-      message(
-        "-- ${NAME} repository will be updated from ${PREVIOUS_GIT_REPOSITORY}#${PREVIOUS_GIT_TAG} to ${GIT_REPOSITORY}#${GIT_TAG}"
-      )
-      add_custom_command(
-        OUTPUT "${STAMP_DIR}/${NAME}-submodule-update"
-        COMMAND
-          "${CMAKE_COMMAND}" -DSOURCE_DESTINATION=${SOURCE_DESTINATION}
-          -DTARGET_FOLDER=${RELATIVE_SOURCE_DIR} -DGIT_REPOSITORY=${GIT_REPOSITORY}
-          -DGIT_TAG=${GIT_TAG} -DLINK_TO=${LINK_TO}
-          -DSTAMP_OUT=${STAMP_DIR}/${NAME}-submodule-update -DOPERATION="update"
-          -DGIT_COMMIT_EXTRA_MSG=${GIT_COMMIT_EXTRA_MSG} -P
-          ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/scripts/git-submodule-init-update.cmake
-        COMMENT "Update ${NAME} repository settings"
-      )
-      add_custom_target(
-        ${NAME}-submodule-update DEPENDS "${STAMP_DIR}/${NAME}-submodule-update"
-      )
     endif()
   endif()
   if(NOT TARGET ${NAME}-submodule-update)
@@ -345,7 +379,7 @@ You have local changes in ${SOURCE_DIR} that would be overwritten by this change
       set(BINARY_DIR "${BUILD_DESTINATION}/${NAME}")
     endif()
   endif()
-  getcommandprefix(COMMAND_PREFIX "${STAMP_DIR}/cmake-prefix.cmake")
+  GetCommandPrefix(COMMAND_PREFIX "${STAMP_DIR}/cmake-prefix.cmake")
   if(EMSCRIPTEN)
     set(EMCMAKE emcmake)
     set(EMMAKE emmake)

@@ -25,6 +25,7 @@ with section("parse"):
     'AddGitSource': {},
     'AddProject': {
       'pargs': 1,
+      'flags': [ "NO_NINJA", "NO_COLOR" ],
       'kwargs': {
         "APT_PACKAGES": "*",
         "APT_DEPENDENCIES": "*",
@@ -52,7 +53,8 @@ with section("parse"):
     '_PutSourceInformationInCache': {},
     'SetCatkinDependencies': {},
     'SetupMcRtcMirror': {},
-    'SetupSourceMonitor': {}
+    'SetupSourceMonitor': {},
+    'GetCommandPrefix': {}
   }
 
   # Override configurations per-command where available
